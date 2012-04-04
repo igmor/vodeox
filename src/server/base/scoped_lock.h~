@@ -1,0 +1,11 @@
+#include <pthread.h>
+
+template<class TMutex>
+class scoped_lock
+{
+    TMutex&  m_mutex;
+ public:
+
+    Singleton()  { m_mutex.lock();}
+    virtual ~Singleton(){ m_mutex.unlock(); }
+};

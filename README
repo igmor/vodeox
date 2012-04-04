@@ -1,0 +1,5 @@
+vodeox
+-------------
+
+This is a simple C++ fan out server utilizing low level epoll for IO.
+The intention is to eventually create some kind of signaling protocol and clients communicating to each other and servers in order to start and perform meaningful communication session. 
