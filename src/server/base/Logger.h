@@ -9,8 +9,11 @@
 #include <string>
 #include <queue>
 
+#include <tr1/memory>
 #include <pthread.h>
-#include <scoped_lock.h>
+
+#include "base/scoped_lock.h"
+#include "base/time.h"
 
 namespace vodeox
 {
@@ -25,7 +28,7 @@ struct LogEntry
 	std::string				 file;
 	int						 line;
 	std::string				 component;
-	int ts;
+    vodeox::time              ts;
 	std::string				 message;
 
 	LogEntry() {}
@@ -33,7 +36,7 @@ struct LogEntry
 	LogEntry(const std::string& f, 
 			 int l, 
 			 const std::string& c, 
-			 int t, 
+			 const vodeox::time& t, 
 			 const std::string&  m) :
 	file(f), line(l), component(c), ts(t), message(m) {}
 };
@@ -88,16 +91,16 @@ class concurrent_queue
 private:
     std::queue<Data>			m_queue;
     mutable vodeox::mutex		m_mutex;
-    boost::condition_variable	m_condition_variable;
+    vodeox::condition_variable	m_condition_variable;
 	bool						m_shutdown;
 public:
 	
     void push(Data const& data)
     {
-        boost::mutex::scoped_lock lock(m_mutex);
+        scoped_lock lock(m_mutex);
         m_queue.push(data);
         lock.unlock();
-        m_condition_variable.notify_one();
+        m_condition_variable.notify();
     }
 
     bool empty() const
@@ -111,7 +114,7 @@ public:
         scoped_lock lock(m_mutex);
         while(m_queue.empty())
         {
-            m_condition_variable.wait(lock);
+            m_condition_variable.wait(m_mutex);
         }
         
 		while(!m_queue.empty())
@@ -134,7 +137,7 @@ public:
 	void shutdown()
 	{
 		//unblock waiting thread
-        m_condition_variable.notify_one();
+        m_condition_variable.notify();
 	}
 };
 
@@ -146,7 +149,7 @@ public:
  *
  */
 
-class Logger :  Singleton<Logger>
+class Logger :  Singleton<Logger>, public vodeox::thread
 {
 	public:
 		typedef enum {
@@ -190,14 +193,14 @@ class Logger :  Singleton<Logger>
 	    static int log(LOGLEVEL level, 
 						const char* file, 
 						int line, 
-						const boost::posix_time::ptime& ts, 
+                        const vodeox::time& ts, 
 						const char* component,
 						const char* fmt, ...);
 	
 		/*
 		 * Set's field delimiter, it's a blank space by default
 		 */
-		static void setOutputFormatter(std::shared_ptr<LoggerFormatter>& formatter)
+		static void setOutputFormatter(std::tr1::shared_ptr<LoggerFormatter>& formatter)
 		{
 			instance().m_formatter = formatter;
 		}
@@ -213,7 +216,7 @@ class Logger :  Singleton<Logger>
 		 */
 
 	#define LOG(NAME,LEVEL) \
-	static int NAME(const char* file, int line, const boost::posix_time::ptime& ts, const char* component, const char* fmt, ...) \
+        static int NAME(const char* file, int line, const vodeox::time& ts, const char* component, const char* fmt, ...) \
 		{ \
 			va_list ap; \
 			va_start(ap, fmt); \
@@ -238,7 +241,7 @@ class Logger :  Singleton<Logger>
 	    int _log(LOGLEVEL level, 
 				 const char* file, 
 				 int line, 
-				 const int& ts, 
+				 const vodeox::time& ts, 
 				 const char* component,
 				 const char* fmt, 
 				 va_list arglist);
@@ -247,7 +250,7 @@ class Logger :  Singleton<Logger>
 
 		void startQueue();
 		void stopQueue();
-		void processQueue();
+		void run();
 		void format(const std::vector<LogEntry>& entries);
 
 		void rotateFile();
@@ -257,9 +260,8 @@ class Logger :  Singleton<Logger>
 	    LOGLEVEL							m_logLevel;
 		std::string							m_delim;
 
-        std::shared_ptr<LoggerFormatter>	m_formatter;
+        std::tr1::shared_ptr<LoggerFormatter>	m_formatter;
 
-	    pthread_t						    m_QueueThread;
 		volatile bool						m_bRunning;
 		concurrent_queue<LogEntry>			m_queue;
 
@@ -270,16 +272,13 @@ class Logger :  Singleton<Logger>
 		mutable mutex				        m_fop_mutex;
 };
 
-typedef boost::date_time::microsec_clock<boost::posix_time::ptime> utc_mcs_time;
-typedef boost::date_time::second_clock<boost::posix_time::ptime> utc_sec_time;
-
-#define LOG_FATAL(component, ...)	Logger::fatal	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component, __VA_ARGS__)
-#define LOG_ERROR(component,...)	Logger::error	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component, __VA_ARGS__)
-#define LOG_WARN(component,...)		Logger::warning	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component,__VA_ARGS__)
-#define LOG_INFO(component,...)		Logger::info	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component,__VA_ARGS__)
-#define LOG_DEBUG(component,...)	Logger::debug	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component, __VA_ARGS__)
-#define LOG_VERBOSE(component,...)	Logger::verbose	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component, __VA_ARGS__)
-#define LOG_SILENT(component,...)	Logger::silent	(__FILE__,__LINE__, utc_mcs_time::universal_time(), component, __VA_ARGS__)
+#define LOG_FATAL(component, ...)	Logger::fatal	(__FILE__,__LINE__, vodeox::time::now(), component, __VA_ARGS__)
+#define LOG_ERROR(component,...)	Logger::error	(__FILE__,__LINE__, vodeox::time::now(), component, __VA_ARGS__)
+#define LOG_WARN(component,...)		Logger::warning	(__FILE__,__LINE__, vodeox::time::now(), component,__VA_ARGS__)
+#define LOG_INFO(component,...)		Logger::info	(__FILE__,__LINE__, vodeox::time::now(), component,__VA_ARGS__)
+#define LOG_DEBUG(component,...)	Logger::debug	(__FILE__,__LINE__, vodeox::time::now(), component, __VA_ARGS__)
+#define LOG_VERBOSE(component,...)	Logger::verbose	(__FILE__,__LINE__, vodeox::time::now(), component, __VA_ARGS__)
+#define LOG_SILENT(component,...)	Logger::silent	(__FILE__,__LINE__, vodeox::time::now(), component, __VA_ARGS__)
 
 } //namespace vodeox
 

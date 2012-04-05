@@ -3,10 +3,13 @@
 #include "Logger.h"
 #include <sstream>
 
-static const uint32 MAX_SNPRINTF_BUF_SIZE = 2048;
+namespace vodeox
+{
+
+static const unsigned int MAX_SNPRINTF_BUF_SIZE = 2048;
 
 //MAX_PATH has too many issues, we just need reasonable buffer size
-static const uint32 MAX_PATH_LENGTH = 2048;
+static const unsigned int MAX_PATH_LENGTH = 2048;
 
 //windows renamed posix string functions to an unsafe version _s*
 #ifdef _WIN32
@@ -18,12 +21,11 @@ std::string DefaultLoggerFormatter::format( const Logger& logger,
 											const LogEntry& logEntry)
 {
 	std::ostringstream s(std::ostringstream::out);
-	s << delim 
+	s << logEntry.ts << delim 
 		<< Logger::getLevelToken(logger.getLevel()) << delim 
 		<< logEntry.component << delim
 		<< logEntry.file << delim
 		<< logEntry.line << delim
-		<< boost::posix_time::to_simple_string(logEntry.ts) << delim 
 		<< logEntry.message << '\n';
 
 	return s.str();
@@ -34,7 +36,7 @@ Logger::Logger() :
 	m_stream(NULL), 
 	m_logLevel(LOG_LEVEL_WARN), 
 	m_bRunning(false),
-	m_delim("`")
+	m_delim(" ")
 {
 }
 
@@ -64,7 +66,7 @@ std::string Logger::getLevelToken(Logger::LOGLEVEL level)
 int Logger::log(LOGLEVEL level, 
 				const char* file, 
 				int line, 
-				const boost::posix_time::ptime& ts, 
+				const vodeox::time& ts, 
 				const char* component, 
 				const char* fmt, ...)
 {
@@ -87,7 +89,8 @@ void Logger::_setFileName(const std::string& name)
 
 	m_archivefmt = name;
 	m_filepath = name;
-	const char* logfname = boost::filesystem::basename(name).c_str();
+    size_t pos = name.rfind('/');
+	const char* logfname = (pos == std::string::npos) ? name.c_str() : name.substr(pos).c_str();
     const char* logbase = strrchr(logfname,'.');
 
 	if (!logbase)
@@ -103,14 +106,14 @@ void Logger::_setFileName(const std::string& name)
 
 void Logger::_setRotationSize(long sz)
 {
-	boost::mutex::scoped_lock lock(m_fop_mutex);
+	scoped_lock lock(m_fop_mutex);
 	m_rotatepos = sz;
 }
 
 int Logger::_log(LOGLEVEL level,  
 				 const char* file, 
 				 int line, 
-				 const boost::posix_time::ptime& ts, 
+				 const vodeox::time& ts, 
 				 const char* component, 
 				 const char* fmt, 
 				 va_list arglist)
@@ -132,14 +135,15 @@ int Logger::_log(LOGLEVEL level,
 void Logger::startQueue()	
 {
 	m_bRunning = true;
-	m_QueueThread = boost::thread(&Logger::processQueue, this);
+    vodeox::thread::start(reinterpret_cast<void*>(this));
 }
 
 void Logger::stopQueue()
 {
 	m_bRunning = false;
 	m_queue.shutdown();
-	m_QueueThread.join();
+	join();
+
 	//clear the queue
 	std::vector<LogEntry> logEntries;
 	m_queue.pop(logEntries);
@@ -152,17 +156,18 @@ void Logger::rotateFile()
 	if (!m_stream)
 		return;
 
-	// check if we need to rotate 
 	if (m_rotatepos > 0)
 	{
-		// close, rename, reopen-truncated..
 		fclose(m_stream);
-		//construct new timestamp-based filename 
 		char newname[MAX_PATH_LENGTH+1];
 		{
-			std::string date_str = boost::posix_time::to_iso_string(utc_mcs_time::local_time());
-			snprintf(newname, sizeof(newname), m_archivefmt.c_str(), date_str.c_str());
+             struct tm t;
+             time_t tt = ::time(NULL);
+             localtime_r(&tt, &t);
+             char dbuf[300];
+             strftime(dbuf, sizeof(dbuf), "%Y-%m-%d-%H%M%S",&t);
 
+			 snprintf(newname, sizeof(newname), m_archivefmt.c_str(), dbuf);
 		}
 
 		if (0 != rename(m_filepath.c_str(),newname))
@@ -182,7 +187,7 @@ void Logger::format(const std::vector<LogEntry>& entries)
 				fprintf(m_stream, "%s\n", message.c_str());
 				fflush(m_stream);
 
-				boost::mutex::scoped_lock lock(m_fop_mutex);
+				scoped_lock lock(m_fop_mutex);
 
 				long  cur = ftell(m_stream);
 				if (cur >= m_rotatepos)
@@ -191,7 +196,7 @@ void Logger::format(const std::vector<LogEntry>& entries)
 		}
 }
 
-void Logger::processQueue()
+void Logger::run()
 {
 	while (m_bRunning)
 	{
@@ -202,3 +207,4 @@ void Logger::processQueue()
 	}
 }
 
+} //namespace vodeox

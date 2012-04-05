@@ -1,1 +1,1 @@
-# dummy
+main/main.o main/main.o: main/main.cpp
