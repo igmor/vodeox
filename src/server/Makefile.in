@@ -32,7 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = vodeox$(EXEEXT)
+bin_PROGRAMS = vodeox$(EXEEXT) client_test$(EXEEXT)
 subdir = src/server
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,9 +46,14 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_vodeox_OBJECTS = base/Logger.$(OBJEXT) main/main.$(OBJEXT)
+am_client_test_OBJECTS = tests/client_test.$(OBJEXT)
+client_test_OBJECTS = $(am_client_test_OBJECTS)
+am__DEPENDENCIES_1 =
+client_test_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_vodeox_OBJECTS = base/time.$(OBJEXT) base/Logger.$(OBJEXT) \
+	base/threadpool.$(OBJEXT) main/main.$(OBJEXT)
 vodeox_OBJECTS = $(am_vodeox_OBJECTS)
-vodeox_LDADD = $(LDADD)
+vodeox_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -62,8 +67,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(vodeox_SOURCES)
-DIST_SOURCES = $(vodeox_SOURCES)
+SOURCES = $(client_test_SOURCES) $(vodeox_SOURCES)
+DIST_SOURCES = $(client_test_SOURCES) $(vodeox_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -93,6 +98,9 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBEVENT_CFLAGS = @LIBEVENT_CFLAGS@
+LIBEVENT_LIBS = @LIBEVENT_LIBS@
+LIBEVENT_MINIUM = @LIBEVENT_MINIUM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -107,6 +115,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -155,7 +166,16 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
-vodeox_SOURCES = base/types.h base/time.h base/scoped_lock.h base/Logger.h base/Logger.cpp main/main.cpp
+AM_CFLAGS = \
+    @LIBEVENT_CFLAGS@
+
+apps_ldadd = \
+    @LIBEVENT_LIBS@
+
+vodeox_SOURCES = base/types.h base/time.h base/time.cpp base/scoped_lock.h base/comcurrent_queue.h base/Logger.h base/Logger.cpp base/threadpool.h base/threadpool.cpp main/main.cpp
+vodeox_LDADD = ${apps_ldadd}
+client_test_SOURCES = tests/client_test.cpp
+client_test_LDADD = ${apps_ldadd}
 all: all-am
 
 .SUFFIXES:
@@ -227,13 +247,28 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+tests/$(am__dirstamp):
+	@$(MKDIR_P) tests
+	@: > tests/$(am__dirstamp)
+tests/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) tests/$(DEPDIR)
+	@: > tests/$(DEPDIR)/$(am__dirstamp)
+tests/client_test.$(OBJEXT): tests/$(am__dirstamp) \
+	tests/$(DEPDIR)/$(am__dirstamp)
+client_test$(EXEEXT): $(client_test_OBJECTS) $(client_test_DEPENDENCIES) 
+	@rm -f client_test$(EXEEXT)
+	$(CXXLINK) $(client_test_OBJECTS) $(client_test_LDADD) $(LIBS)
 base/$(am__dirstamp):
 	@$(MKDIR_P) base
 	@: > base/$(am__dirstamp)
 base/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) base/$(DEPDIR)
 	@: > base/$(DEPDIR)/$(am__dirstamp)
+base/time.$(OBJEXT): base/$(am__dirstamp) \
+	base/$(DEPDIR)/$(am__dirstamp)
 base/Logger.$(OBJEXT): base/$(am__dirstamp) \
+	base/$(DEPDIR)/$(am__dirstamp)
+base/threadpool.$(OBJEXT): base/$(am__dirstamp) \
 	base/$(DEPDIR)/$(am__dirstamp)
 main/$(am__dirstamp):
 	@$(MKDIR_P) main
@@ -250,13 +285,19 @@ vodeox$(EXEEXT): $(vodeox_OBJECTS) $(vodeox_DEPENDENCIES)
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f base/Logger.$(OBJEXT)
+	-rm -f base/threadpool.$(OBJEXT)
+	-rm -f base/time.$(OBJEXT)
 	-rm -f main/main.$(OBJEXT)
+	-rm -f tests/client_test.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/Logger.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/threadpool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/time.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@main/$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/client_test.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -388,6 +429,8 @@ distclean-generic:
 	-rm -f base/$(am__dirstamp)
 	-rm -f main/$(DEPDIR)/$(am__dirstamp)
 	-rm -f main/$(am__dirstamp)
+	-rm -f tests/$(DEPDIR)/$(am__dirstamp)
+	-rm -f tests/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -397,7 +440,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf base/$(DEPDIR) main/$(DEPDIR)
+	-rm -rf base/$(DEPDIR) main/$(DEPDIR) tests/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -443,7 +486,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf base/$(DEPDIR) main/$(DEPDIR)
+	-rm -rf base/$(DEPDIR) main/$(DEPDIR) tests/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

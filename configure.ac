@@ -20,6 +20,12 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([string])
 AC_CHECK_HEADERS([iostream])
 
+# LibEvent
+LIBEVENT_MINIMUM=2.0.10
+AC_SUBST(LIBEVENT_MINIUM)
+
+PKG_CHECK_MODULES(LIBEVENT, [libevent >= $LIBEVENT_MINIMUM])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 

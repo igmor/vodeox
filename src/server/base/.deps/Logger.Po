@@ -89,9 +89,8 @@ base/Logger.o base/Logger.o: base/Logger.cpp ../../config.h base/Logger.h \
   /usr/include/c++/4.2.1/tr1/type_traits_fwd.h \
   /usr/include/c++/4.2.1/tr1/boost_shared_ptr.h base/scoped_lock.h \
   /usr/include/errno.h /usr/include/sys/errno.h base/time.h \
-  /usr/include/sys/time.h base/types.h /usr/include/c++/4.2.1/sstream \
-  /usr/include/c++/4.2.1/istream /usr/include/c++/4.2.1/ios \
-  /usr/include/c++/4.2.1/bits/localefwd.h \
+  /usr/include/sys/time.h /usr/include/c++/4.2.1/ostream \
+  /usr/include/c++/4.2.1/ios /usr/include/c++/4.2.1/bits/localefwd.h \
   /usr/include/c++/4.2.1/bits/ios_base.h \
   /usr/include/c++/4.2.1/bits/locale_classes.h \
   /usr/include/c++/4.2.1/streambuf \
@@ -106,9 +105,11 @@ base/Logger.o base/Logger.o: base/Logger.cpp ../../config.h base/Logger.h \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/time_members.h \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/messages_members.h \
   /usr/include/c++/4.2.1/bits/basic_ios.tcc \
-  /usr/include/c++/4.2.1/bits/istream.tcc /usr/include/c++/4.2.1/locale \
-  /usr/include/c++/4.2.1/bits/locale_facets.tcc \
-  /usr/include/c++/4.2.1/ostream /usr/include/c++/4.2.1/bits/ostream.tcc \
+  /usr/include/c++/4.2.1/bits/ostream.tcc /usr/include/c++/4.2.1/locale \
+  /usr/include/c++/4.2.1/bits/locale_facets.tcc base/types.h \
+  base/concurrent_queue.h base/scoped_lock.h \
+  /usr/include/c++/4.2.1/sstream /usr/include/c++/4.2.1/istream \
+  /usr/include/c++/4.2.1/bits/istream.tcc \
   /usr/include/c++/4.2.1/bits/sstream.tcc
 
 ../../config.h:
@@ -377,11 +378,7 @@ base/time.h:
 
 /usr/include/sys/time.h:
 
-base/types.h:
-
-/usr/include/c++/4.2.1/sstream:
-
-/usr/include/c++/4.2.1/istream:
+/usr/include/c++/4.2.1/ostream:
 
 /usr/include/c++/4.2.1/ios:
 
@@ -417,14 +414,22 @@ base/types.h:
 
 /usr/include/c++/4.2.1/bits/basic_ios.tcc:
 
-/usr/include/c++/4.2.1/bits/istream.tcc:
+/usr/include/c++/4.2.1/bits/ostream.tcc:
 
 /usr/include/c++/4.2.1/locale:
 
 /usr/include/c++/4.2.1/bits/locale_facets.tcc:
 
-/usr/include/c++/4.2.1/ostream:
+base/types.h:
 
-/usr/include/c++/4.2.1/bits/ostream.tcc:
+base/concurrent_queue.h:
+
+base/scoped_lock.h:
+
+/usr/include/c++/4.2.1/sstream:
+
+/usr/include/c++/4.2.1/istream:
+
+/usr/include/c++/4.2.1/bits/istream.tcc:
 
 /usr/include/c++/4.2.1/bits/sstream.tcc:

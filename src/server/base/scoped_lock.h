@@ -1,5 +1,9 @@
+#ifndef __SCOPED_LOCK_H
+#define __SCOPED_LOCK_H
+
 #include <pthread.h>
 #include <errno.h>
+#include <stdio.h>
 
 namespace vodeox
 {
@@ -131,3 +135,6 @@ class thread
 };
 
 } //namespace vodeox
+
+
+#endif

@@ -2,6 +2,10 @@
 #define __TIME_H
 
 #include <sys/time.h>
+#include <stdio.h>
+
+#include <ostream>
+
 #include "base/types.h"
 
 namespace vodeox
@@ -85,12 +89,7 @@ class time
 };
 
 std::ostream &
-     operator<<(std::ostream & ostr, time const & t)
- {
-     ostr << t.usec();
-     return ostr;
- }
-
+    operator<<(std::ostream & ostr, time const & t);
 
 }
 
