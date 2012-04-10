@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         echoServPort = 7;  /* 7 is the well-known port for the echo service */
 
     /* Create a reliable, stream socket using TCP */
-    if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+    if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
         DieWithError("socket() failed");
 
     /* Construct the server address structure */
@@ -56,9 +56,11 @@ int main(int argc, char *argv[])
 
     echoStringLen = strlen(echoString);          /* Determine input length */
 
+    socklen_t slen = sizeof(echoServAddr);
     /* Send the string to the server */
-    if (send(sock, echoString, echoStringLen, 0) != echoStringLen)
-        DieWithError("send() sent a different number of bytes than expected");
+    int ret = 0;
+    if ((ret = sendto(sock, echoString, echoStringLen, 0, (struct sockaddr *) &echoServAddr, slen)) != echoStringLen)
+        fprintf(stderr, "send() sent a different number of bytes than expected %d\n", ret);
 
     /* Receive the same string back from the server */
     totalBytesRcvd = 0;
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
     {
         /* Receive up to the buffer size (minus 1 to leave space for
            a null terminator) bytes from the sender */
-        if ((bytesRcvd = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
+        if ((bytesRcvd = recvfrom(sock, echoBuffer, RCVBUFSIZE - 1, 0, (struct sockaddr *) &echoServAddr, &slen)) <= 0)
             DieWithError("recv() failed or connection closed prematurely");
         totalBytesRcvd += bytesRcvd;   /* Keep tally of total bytes */
         echoBuffer[bytesRcvd] = '\0';  /* Terminate the string! */

@@ -6,7 +6,7 @@ namespace vodeox
 
 static const char* component = "Threadpool";
 
-Worker::Worker(vodeox::concurrent_queue<WorkItem>& wi_queue)
+Worker::Worker(WorkQueue& wi_queue)
                : m_items_queue(wi_queue), m_bIsRunning(false)
 {
     LOG_INFO(component, "Worker created.");
@@ -23,11 +23,11 @@ void Worker::run()
 
     while (m_bIsRunning)
     {
-        std::vector<WorkItem> items;
+        std::vector<std::tr1::shared_ptr<WorkItem> > items;
         m_items_queue.wait_and_pop(items);
 
         for (int i = 0; i < items.size(); i++)
-            items[i].execute();
+            items[i]->execute();
     }
 }
 
@@ -69,7 +69,7 @@ void Threadpool::stop()
         m_workers[i]->shutdown();
 }
 
-void Threadpool::add(const WorkItem& wi)
+void Threadpool::add(std::tr1::shared_ptr<WorkItem>& wi)
 {
     LOG_INFO(component, "Threadpool got new item");
 

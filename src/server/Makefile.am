@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 bin_PROGRAMS = vodeox client_test
 
 AM_CFLAGS = \
-    @LIBEVENT_CFLAGS@
+    @LIBEVENT_CFLAGS@ -DUSE_DEBUG
 
 apps_ldadd = \
     @LIBEVENT_LIBS@
@@ -18,6 +18,7 @@ apps_ldadd = \
 ## header files (.h) do not result in object files by themselves, but will be
 ## included in distribution archives of the project.
 vodeox_SOURCES = base/types.h base/time.h base/time.cpp base/scoped_lock.h base/comcurrent_queue.h base/Logger.h base/Logger.cpp base/threadpool.h base/threadpool.cpp main/main.cpp
+vodeox_CPPFLAGS=-DUSE_DEBUG
 vodeox_LDADD = ${apps_ldadd}
 
 

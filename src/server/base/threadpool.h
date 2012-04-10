@@ -16,13 +16,15 @@ class WorkItem
     virtual void execute() {}
 };
 
+typedef vodeox::concurrent_queue<std::tr1::shared_ptr<WorkItem> >  WorkQueue;
+
 class Worker : public vodeox::thread
 {
  protected:
-    concurrent_queue<WorkItem>& m_items_queue;
+    WorkQueue&                  m_items_queue;
     bool                        m_bIsRunning;
  public:
-    Worker(vodeox::concurrent_queue<WorkItem>& wi_queue);
+    Worker(WorkQueue& wi_queue);
     virtual ~Worker();
 
     void run();
@@ -32,9 +34,9 @@ class Worker : public vodeox::thread
 class Threadpool
 {
  protected:
-    vodeox::mutex                                 mutex;
-    std::vector<std::tr1::shared_ptr<Worker> >    m_workers;
-    vodeox::concurrent_queue<WorkItem>            m_witems;
+    vodeox::mutex                               mutex;
+    std::vector<std::tr1::shared_ptr<Worker> >  m_workers;
+    WorkQueue                                   m_witems;
 
  public:
     Threadpool(int numThreads=10);
@@ -43,7 +45,7 @@ class Threadpool
     void start();
     void stop();
 
-    void add(const WorkItem& wi); 
+    void add(std::tr1::shared_ptr<WorkItem>& wi); 
 };
 
 } //namespace 
