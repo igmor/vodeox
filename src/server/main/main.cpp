@@ -191,7 +191,7 @@ run(void)
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(40713);
 
-    listener = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    listener = socket(AF_INET, SOCK_DGRAM, 0);
     evutil_make_socket_nonblocking(listener);
 
     if (bind(listener, (struct sockaddr*)&sin, sizeof(sin)) < 0) {
