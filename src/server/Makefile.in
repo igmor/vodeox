@@ -50,9 +50,8 @@ am_client_test_OBJECTS = tests/client_test.$(OBJEXT)
 client_test_OBJECTS = $(am_client_test_OBJECTS)
 am__DEPENDENCIES_1 =
 client_test_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_vodeox_OBJECTS = base/vodeox-time.$(OBJEXT) \
-	base/vodeox-Logger.$(OBJEXT) base/vodeox-threadpool.$(OBJEXT) \
-	main/vodeox-main.$(OBJEXT)
+am_vodeox_OBJECTS = base/time.$(OBJEXT) base/Logger.$(OBJEXT) \
+	base/threadpool.$(OBJEXT) main/main.$(OBJEXT)
 vodeox_OBJECTS = $(am_vodeox_OBJECTS)
 vodeox_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -167,14 +166,14 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
-AM_CFLAGS = \
-    @LIBEVENT_CFLAGS@ -DUSE_DEBUG
-
+@DEBUG_FALSE@AM_CFLAGS = @LIBEVENT_CFLAGS@ -O2 
+@DEBUG_TRUE@AM_CFLAGS = @LIBEVENT_CFLAGS@  -g3 -O0 
+@DEBUG_FALSE@AM_CXXFLAGS = @LIBEVENT_CFLAGS@ -O2 
+@DEBUG_TRUE@AM_CXXFLAGS = @LIBEVENT_CFLAGS@ -g3 -O0 
 apps_ldadd = \
     @LIBEVENT_LIBS@
 
 vodeox_SOURCES = base/types.h base/time.h base/time.cpp base/scoped_lock.h base/comcurrent_queue.h base/Logger.h base/Logger.cpp base/threadpool.h base/threadpool.cpp main/main.cpp
-vodeox_CPPFLAGS = -DUSE_DEBUG
 vodeox_LDADD = ${apps_ldadd}
 client_test_SOURCES = tests/client_test.cpp
 client_test_LDADD = ${apps_ldadd}
@@ -266,11 +265,11 @@ base/$(am__dirstamp):
 base/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) base/$(DEPDIR)
 	@: > base/$(DEPDIR)/$(am__dirstamp)
-base/vodeox-time.$(OBJEXT): base/$(am__dirstamp) \
+base/time.$(OBJEXT): base/$(am__dirstamp) \
 	base/$(DEPDIR)/$(am__dirstamp)
-base/vodeox-Logger.$(OBJEXT): base/$(am__dirstamp) \
+base/Logger.$(OBJEXT): base/$(am__dirstamp) \
 	base/$(DEPDIR)/$(am__dirstamp)
-base/vodeox-threadpool.$(OBJEXT): base/$(am__dirstamp) \
+base/threadpool.$(OBJEXT): base/$(am__dirstamp) \
 	base/$(DEPDIR)/$(am__dirstamp)
 main/$(am__dirstamp):
 	@$(MKDIR_P) main
@@ -278,7 +277,7 @@ main/$(am__dirstamp):
 main/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) main/$(DEPDIR)
 	@: > main/$(DEPDIR)/$(am__dirstamp)
-main/vodeox-main.$(OBJEXT): main/$(am__dirstamp) \
+main/main.$(OBJEXT): main/$(am__dirstamp) \
 	main/$(DEPDIR)/$(am__dirstamp)
 vodeox$(EXEEXT): $(vodeox_OBJECTS) $(vodeox_DEPENDENCIES) 
 	@rm -f vodeox$(EXEEXT)
@@ -286,19 +285,19 @@ vodeox$(EXEEXT): $(vodeox_OBJECTS) $(vodeox_DEPENDENCIES)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f base/vodeox-Logger.$(OBJEXT)
-	-rm -f base/vodeox-threadpool.$(OBJEXT)
-	-rm -f base/vodeox-time.$(OBJEXT)
-	-rm -f main/vodeox-main.$(OBJEXT)
+	-rm -f base/Logger.$(OBJEXT)
+	-rm -f base/threadpool.$(OBJEXT)
+	-rm -f base/time.$(OBJEXT)
+	-rm -f main/main.$(OBJEXT)
 	-rm -f tests/client_test.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/vodeox-Logger.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/vodeox-threadpool.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/vodeox-time.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@main/$(DEPDIR)/vodeox-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/Logger.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/threadpool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@base/$(DEPDIR)/time.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@main/$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@tests/$(DEPDIR)/client_test.Po@am__quote@
 
 .cpp.o:
@@ -316,62 +315,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-base/vodeox-time.o: base/time.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-time.o -MD -MP -MF base/$(DEPDIR)/vodeox-time.Tpo -c -o base/vodeox-time.o `test -f 'base/time.cpp' || echo '$(srcdir)/'`base/time.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-time.Tpo base/$(DEPDIR)/vodeox-time.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/time.cpp' object='base/vodeox-time.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-time.o `test -f 'base/time.cpp' || echo '$(srcdir)/'`base/time.cpp
-
-base/vodeox-time.obj: base/time.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-time.obj -MD -MP -MF base/$(DEPDIR)/vodeox-time.Tpo -c -o base/vodeox-time.obj `if test -f 'base/time.cpp'; then $(CYGPATH_W) 'base/time.cpp'; else $(CYGPATH_W) '$(srcdir)/base/time.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-time.Tpo base/$(DEPDIR)/vodeox-time.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/time.cpp' object='base/vodeox-time.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-time.obj `if test -f 'base/time.cpp'; then $(CYGPATH_W) 'base/time.cpp'; else $(CYGPATH_W) '$(srcdir)/base/time.cpp'; fi`
-
-base/vodeox-Logger.o: base/Logger.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-Logger.o -MD -MP -MF base/$(DEPDIR)/vodeox-Logger.Tpo -c -o base/vodeox-Logger.o `test -f 'base/Logger.cpp' || echo '$(srcdir)/'`base/Logger.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-Logger.Tpo base/$(DEPDIR)/vodeox-Logger.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/Logger.cpp' object='base/vodeox-Logger.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-Logger.o `test -f 'base/Logger.cpp' || echo '$(srcdir)/'`base/Logger.cpp
-
-base/vodeox-Logger.obj: base/Logger.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-Logger.obj -MD -MP -MF base/$(DEPDIR)/vodeox-Logger.Tpo -c -o base/vodeox-Logger.obj `if test -f 'base/Logger.cpp'; then $(CYGPATH_W) 'base/Logger.cpp'; else $(CYGPATH_W) '$(srcdir)/base/Logger.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-Logger.Tpo base/$(DEPDIR)/vodeox-Logger.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/Logger.cpp' object='base/vodeox-Logger.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-Logger.obj `if test -f 'base/Logger.cpp'; then $(CYGPATH_W) 'base/Logger.cpp'; else $(CYGPATH_W) '$(srcdir)/base/Logger.cpp'; fi`
-
-base/vodeox-threadpool.o: base/threadpool.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-threadpool.o -MD -MP -MF base/$(DEPDIR)/vodeox-threadpool.Tpo -c -o base/vodeox-threadpool.o `test -f 'base/threadpool.cpp' || echo '$(srcdir)/'`base/threadpool.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-threadpool.Tpo base/$(DEPDIR)/vodeox-threadpool.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/threadpool.cpp' object='base/vodeox-threadpool.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-threadpool.o `test -f 'base/threadpool.cpp' || echo '$(srcdir)/'`base/threadpool.cpp
-
-base/vodeox-threadpool.obj: base/threadpool.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT base/vodeox-threadpool.obj -MD -MP -MF base/$(DEPDIR)/vodeox-threadpool.Tpo -c -o base/vodeox-threadpool.obj `if test -f 'base/threadpool.cpp'; then $(CYGPATH_W) 'base/threadpool.cpp'; else $(CYGPATH_W) '$(srcdir)/base/threadpool.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) base/$(DEPDIR)/vodeox-threadpool.Tpo base/$(DEPDIR)/vodeox-threadpool.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='base/threadpool.cpp' object='base/vodeox-threadpool.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o base/vodeox-threadpool.obj `if test -f 'base/threadpool.cpp'; then $(CYGPATH_W) 'base/threadpool.cpp'; else $(CYGPATH_W) '$(srcdir)/base/threadpool.cpp'; fi`
-
-main/vodeox-main.o: main/main.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT main/vodeox-main.o -MD -MP -MF main/$(DEPDIR)/vodeox-main.Tpo -c -o main/vodeox-main.o `test -f 'main/main.cpp' || echo '$(srcdir)/'`main/main.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) main/$(DEPDIR)/vodeox-main.Tpo main/$(DEPDIR)/vodeox-main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='main/main.cpp' object='main/vodeox-main.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o main/vodeox-main.o `test -f 'main/main.cpp' || echo '$(srcdir)/'`main/main.cpp
-
-main/vodeox-main.obj: main/main.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT main/vodeox-main.obj -MD -MP -MF main/$(DEPDIR)/vodeox-main.Tpo -c -o main/vodeox-main.obj `if test -f 'main/main.cpp'; then $(CYGPATH_W) 'main/main.cpp'; else $(CYGPATH_W) '$(srcdir)/main/main.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) main/$(DEPDIR)/vodeox-main.Tpo main/$(DEPDIR)/vodeox-main.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='main/main.cpp' object='main/vodeox-main.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(vodeox_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o main/vodeox-main.obj `if test -f 'main/main.cpp'; then $(CYGPATH_W) 'main/main.cpp'; else $(CYGPATH_W) '$(srcdir)/main/main.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

@@ -63,7 +63,7 @@ public:
 	void shutdown()
 	{
 		//unblock waiting thread
-        m_condition_variable.notify();
+        m_condition_variable.notify_all();
 	}
 };
 

@@ -11,11 +11,11 @@ main/main.o main/main.o: main/main.cpp /usr/include/netinet/in.h \
   /usr/include/libkern/i386/_OSByteOrder.h /usr/include/sys/_structs.h \
   /usr/include/machine/_param.h /usr/include/i386/_param.h \
   /usr/include/netinet6/in6.h /usr/include/fcntl.h \
-  /usr/include/sys/fcntl.h /usr/local/include/event2/event.h \
+  /usr/include/sys/fcntl.h /usr/include/arpa/inet.h /usr/include/_types.h \
+  /usr/local/include/event2/event.h \
   /usr/local/include/event2/event-config.h /usr/include/sys/time.h \
-  /usr/include/time.h /usr/include/_types.h /usr/include/_structs.h \
-  /usr/include/sys/_select.h /usr/include/stdio.h \
-  /usr/local/include/event2/util.h \
+  /usr/include/time.h /usr/include/_structs.h /usr/include/sys/_select.h \
+  /usr/include/stdio.h /usr/local/include/event2/util.h \
   /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stddef.h \
   /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdarg.h \
   /usr/include/netdb.h /usr/include/assert.h /usr/include/stdlib.h \
@@ -74,6 +74,10 @@ main/main.o main/main.o: main/main.cpp /usr/include/netinet/in.h \
 
 /usr/include/sys/fcntl.h:
 
+/usr/include/arpa/inet.h:
+
+/usr/include/_types.h:
+
 /usr/local/include/event2/event.h:
 
 /usr/local/include/event2/event-config.h:
@@ -81,8 +85,6 @@ main/main.o main/main.o: main/main.cpp /usr/include/netinet/in.h \
 /usr/include/sys/time.h:
 
 /usr/include/time.h:
-
-/usr/include/_types.h:
 
 /usr/include/_structs.h:
 

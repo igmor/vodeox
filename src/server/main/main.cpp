@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 /* For fcntl */
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #include <event2/event.h>
 
@@ -18,6 +19,14 @@
 
 void do_read(evutil_socket_t fd, short events, void *arg);
 void do_write(evutil_socket_t fd, short events, void *arg);
+
+void print_ip(struct sockaddr_in& saddr)
+{
+    fprintf(stderr, "cli addr: %d.%d.%d.%d\n", (ntohl(saddr.sin_addr.s_addr) & 0xff000000) >> 24, 
+            (ntohl(saddr.sin_addr.s_addr) & 0x00ff0000) >> 16, 
+            (ntohl(saddr.sin_addr.s_addr) & 0x0000ff00) >> 8,
+            (ntohl(saddr.sin_addr.s_addr) & 0x000000ff));
+}
 
 char
 rot13_char(char c)
@@ -41,6 +50,8 @@ struct fd_state {
 
     struct event *read_event;
     struct event *write_event;
+
+    sockaddr_in cli;
 };
 
 struct fd_state *
@@ -87,18 +98,23 @@ do_read(evutil_socket_t fd, short events, void *arg)
     int i;
     ssize_t result;
     struct sockaddr_in cli;
-    socklen_t slen;
+    socklen_t slen = sizeof(cli);
 
     while (1) {
         assert(state->write_event);
-        result = recvfrom(fd, buf, sizeof(buf), 0, (sockaddr*)&cli, &slen);
+        memset(&cli, 0, sizeof(cli));
+        result = recvfrom(fd, buf, sizeof(buf), 0, (struct sockaddr*)&cli, &slen);
+
+        print_ip(cli);
+
         if (result <= 0)
             break;
 
+        memcpy(&state->cli, &cli, sizeof(cli));
         for (i=0; i < result; ++i)  {
             if (state->buffer_used < sizeof(state->buffer))
                 state->buffer[state->buffer_used++] = rot13_char(buf[i]);
-            if (buf[i] == '\n') {
+            if (i == result-1) {
                 assert(state->write_event);
                 event_add(state->write_event, NULL);
                 state->write_upto = state->buffer_used;
@@ -124,9 +140,11 @@ do_write(evutil_socket_t fd, short events, void *arg)
     struct fd_state *state = (fd_state*)arg;
 
     while (state->n_written < state->write_upto) {
-        ssize_t result = send(fd, state->buffer + state->n_written,
-                              state->write_upto - state->n_written, 0);
+        ssize_t result = sendto(fd, state->buffer + state->n_written,
+                                state->write_upto - state->n_written, 0, (struct sockaddr*)&(state->cli), sizeof(state->cli));
         if (result < 0) {
+            print_ip(state->cli);
+            fprintf(stderr, "sendto error %s %d %d\n", state->buffer, state->write_upto, errno);
             if (errno == EAGAIN) // XXX use evutil macro
                 return;
             free_fd_state(state);
@@ -187,8 +205,10 @@ run(void)
     if (!base)
         return; /*XXXerr*/
 
+    memset(&sin,0,sizeof(sin));
+
     sin.sin_family = AF_INET;
-    sin.sin_addr.s_addr = INADDR_ANY;
+    sin.sin_addr.s_addr = htonl(INADDR_ANY);
     sin.sin_port = htons(40713);
 
     listener = socket(AF_INET, SOCK_DGRAM, 0);
@@ -199,10 +219,15 @@ run(void)
         return;
     }
 
-    listener_event = event_new(base, listener, EV_ET|EV_READ|EV_PERSIST, do_read, (void*)base);
-    /*XXX check it */
-    event_add(listener_event, NULL);
+    struct fd_state *state;
+    state = alloc_fd_state(base, listener);
+        
+    assert(state); /*XXX err*/
+    assert(state->write_event);
+    
+    event_add(state->read_event, NULL);
 
+    //run even loop
     event_base_dispatch(base);
 }
 
